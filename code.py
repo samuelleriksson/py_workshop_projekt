@@ -219,95 +219,129 @@ app = dash.Dash(__name__)
 
 
 app.layout = html.Div([
-    html.H1("Ames Housing Price Model", style={'textAlign': 'center', "color": "white", "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"}),
+    html.H1(
+        "Ames Housing Price Model",
+        style={
+            "textAlign": "center",
+            "color": "white",
+            "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"
+        }
+    ),
 
     html.Div([
         html.H2("Full Dataset Preview"),
-        html.P("This table shows the first 50 rows of the Ames housing dataset."),
-    ], style={'width': '80%', 'margin': '0 auto', "color": "white", "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"}),
+        html.P("This table shows the first 50 rows of the Ames housing dataset.")
+    ], style={
+        "width": "80%",
+        "margin": "0 auto",
+        "color": "white",
+        "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"
+    }),
 
     dash_table.DataTable(
         data=df.head(50).to_dict("records"),
         columns=[{"name": i, "id": i} for i in df.columns],
         page_size=50,
         style_table={
-            'overflowX': 'auto',
-            'overflowY': 'auto',
-            'maxHeight': '300px',
-            'width': '80%',
-            'margin': '0 auto'
+            "overflowX": "auto",
+            "overflowY": "auto",
+            "maxHeight": "300px",
+            "width": "80%",
+            "margin": "0 auto"
         },
         style_cell={
-            'textAlign': 'left',
-            'padding': '8px',
-            'minWidth': '100px',
-            'whiteSpace': 'normal'
+            "textAlign": "left",
+            "padding": "8px",
+            "minWidth": "100px",
+            "whiteSpace": "normal"
         },
         style_header={
-            'backgroundColor': '#f2f2f2',
-            'fontWeight': 'bold',
-            'textAlign': 'left'
+            "backgroundColor": "#f2f2f2",
+            "fontWeight": "bold",
+            "textAlign": "left"
         },
         style_data_conditional=[
-            {'if': {'row_index': 'odd'}, 'backgroundColor': '#fafafa'}
+            {
+                "if": {"row_index": "odd"},
+                "backgroundColor": "#fafafa"
+            }
         ]
     ),
 
-    html.H2("Explore Variable Relationships", style={'textAlign': 'center', 'marginTop': '40px', "color": "white", "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"}),
+    html.H2(
+        "Explore Variable Relationships",
+        style={
+            "textAlign": "center",
+            "marginTop": "40px",
+            "color": "white",
+            "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"
+        }
+    ),
 
     html.Div([
         # Graph (left)
-        dcc.Graph(id='scatter-plot', style={'width': '70%'}),
+        dcc.Graph(id='scatter-plot', style={"width": "70%"}),
 
-        # Variable selection (right)
+        # Dropdown controls (right)
         html.Div([
             html.Label("Select X-axis variable:"),
             dcc.Dropdown(
                 id='x-axis',
                 options=[{'label': col, 'value': col} for col in numeric_columns],
-                value='GrLivArea'
+                value ='GrLivArea'
             ),
 
-            html.Label("Select Y-axis variable:", style={'marginTop': '20px'}),
+            html.Label("Select Y-axis variable:", style={"marginTop": "20px"}),
             dcc.Dropdown(
                 id='y-axis',
                 options=[{'label': col, 'value': col} for col in numeric_columns],
                 value='SalePrice'
             )
         ], style={
-            'width': '25%',
-            'paddingLeft': '30px',
-            'display': 'flex',
-            'flexDirection': 'column',
-            'justifyContent': 'center',
-            "color": "white", 
+            "width": "25%",
+            "paddingLeft": "30px",
+            "display": "flex",
+            "flexDirection": "column",
+            "justifyContent": "center",
+            "color": "white",
             "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"
         })
     ], style={
-        'display': 'flex',
-        'justifyContent': 'center',
-        'alignItems': 'center',
-        'marginTop': '40px',
-        'width': '90%',
-        'marginLeft': 'auto',
-        'marginRight': 'auto'
+        "display": "flex",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "marginTop": "40px",
+        "width": "90%",
+        "marginLeft": "auto",
+        "marginRight": "auto"
     }),
-        html.H3("Parameters with the highest R^2 value", style={'textAlign': 'center', 'marginTop': '40px', "color": "white", "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"}),
-        html.Div([
-            # Graph (left)
-            dcc.Graph(id='R^2', style={'width': '70%'})]
-    )
-],style={
-"background-image": 'url("https://dystewilliams.com/wp-content/uploads/2020/07/iStock-1181134074-neighborhood-1536x864.jpg")',
-"backgroundRepeat": "repeat-y",
-"background-size": "auto",
-"minHeight": "200vh", 
-"minwidth": "100vw", 
-"padding": "0",
-"margin": "0",
-"border": "none",
-"outline": "none",
-"boxSizing": "border-box"})
+
+    html.H3(
+        "Parameters with the highest R² value",
+        style={
+            "textAlign": "center",
+            "marginTop": "40px",
+            "color": "white",
+            "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"
+        }
+    ),
+
+    html.Div([
+        dcc.Graph(id='R^2', style={"width": "70%"})
+    ])
+], style={
+    "backgroundImage": 'url("https://dystewilliams.com/wp-content/uploads/2020/07/iStock-1181134074-neighborhood-1536x864.jpg")',
+    "backgroundRepeat": "repeat-y",
+    "backgroundSize": "auto",
+    "minHeight": "200vh",
+    "minWidth": "100vw",
+    "padding": "0",
+    "margin": "0",
+    "border": "none",
+    "outline": "none",
+    "boxSizing": "border-box"
+})
+
 
 # Callback for updating the scatter plot
 @app.callback(
