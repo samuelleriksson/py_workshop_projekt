@@ -206,9 +206,13 @@ print(f"MSE: {mse:,.2f}")
 #%%
 
 import dash
-from dash import html
-from dash import dash_table
+from dash import html, dash_table, dcc, Output, Input
+from sklearn.datasets import fetch_openml
+import pandas as pd
+import plotly.express as px
 
+
+numeric_columns = df.select_dtypes(include='number').columns
 
 # Initialize the app
 app = dash.Dash(__name__)
@@ -216,58 +220,101 @@ app = dash.Dash(__name__)
 
 app.layout = html.Div([
     html.H1("Ames Housing Price Model", style={'textAlign': 'center'}),
-    
+
     html.Div([
         html.H2("Full Dataset Preview"),
-        html.P("This table shows the raw version of the Ames housing dataset, including 1460 data entries with 80 varibles and SalePrice")
+        html.P("This table shows the first 50 rows of the Ames housing dataset."),
     ], style={'width': '80%', 'margin': '0 auto'}),
-    
+
     dash_table.DataTable(
-    data=df.to_dict("records"),
-    columns=[{"name": i, "id": i} for i in df.columns],
-    
-    # Layout and scrolling
-    style_table={
-        'overflowX': 'auto',         # Enables horizontal scrolling
-        'overflowY': 'auto',         # Enables vertical scrolling
-        'maxHeight': '300px',        # Limits the table height (adds vertical scroll if needed)
-        'width': '80%',              # Table takes up 80% of the page width
-        'margin': '0 auto'           # Centers the table horizontally
-    },
+        data=df.head(50).to_dict("records"),
+        columns=[{"name": i, "id": i} for i in df.columns],
+        page_size=50,
+        style_table={
+            'overflowX': 'auto',
+            'overflowY': 'auto',
+            'maxHeight': '300px',
+            'width': '80%',
+            'margin': '0 auto'
+        },
+        style_cell={
+            'textAlign': 'left',
+            'padding': '8px',
+            'minWidth': '100px',
+            'whiteSpace': 'normal'
+        },
+        style_header={
+            'backgroundColor': '#f2f2f2',
+            'fontWeight': 'bold',
+            'textAlign': 'left'
+        },
+        style_data_conditional=[
+            {'if': {'row_index': 'odd'}, 'backgroundColor': '#fafafa'}
+        ]
+    ),
 
-    # Pagination
-    page_size=50,  # Shows 50 rows per page with pagination controls
+    html.H2("Explore Variable Relationships", style={'textAlign': 'center', 'marginTop': '40px'}),
 
-    # Cell styling
-    style_cell={
-        'textAlign': 'left',         # Left-aligns text in all cells
-        'padding': '8px',            # Adds padding inside cells
-        'minWidth': '100px',         # Ensures all columns have enough space
-        'whiteSpace': 'normal'       # Allows text to wrap (instead of overflowing)
-    },
+    html.Div([
+        # Graph (left)
+        dcc.Graph(id='scatter-plot', style={'width': '70%'}),
 
-    # Header styling
-    style_header={
-        'backgroundColor': '#f2f2f2',  # Light gray header background
-        'fontWeight': 'bold',         # Bold text in headers
-        'textAlign': 'left'           # Left-align headers
-    },
+        # Variable selection (right)
+        html.Div([
+            html.Label("Select X-axis variable:"),
+            dcc.Dropdown(
+                id='x-axis',
+                options=[{'label': col, 'value': col} for col in numeric_columns],
+                value='GrLivArea'
+            ),
 
-    # Alternating row colors
-    style_data_conditional=[
-        {
-            'if': {'row_index': 'odd'},
-            'backgroundColor': '#fafafa'  # Light gray background for odd rows
-        }
-    ]
-)
+            html.Label("Select Y-axis variable:", style={'marginTop': '20px'}),
+            dcc.Dropdown(
+                id='y-axis',
+                options=[{'label': col, 'value': col} for col in numeric_columns],
+                value='SalePrice'
+            )
+        ], style={
+            'width': '25%',
+            'paddingLeft': '30px',
+            'display': 'flex',
+            'flexDirection': 'column',
+            'justifyContent': 'center'
+        })
+    ], style={
+        'display': 'flex',
+        'justifyContent': 'center',
+        'alignItems': 'center',
+        'marginTop': '40px',
+        'width': '90%',
+        'marginLeft': 'auto',
+        'marginRight': 'auto'
+    })
 ])
 
-# Run the server
+# Callback for updating the scatter plot
+@app.callback(
+    Output('scatter-plot', 'figure'),
+    Input('x-axis', 'value'),
+    Input('y-axis', 'value')
+)
+def update_plot(x_col, y_col):
+    fig = px.scatter(
+        df, x=x_col, y=y_col,
+        title=f"{y_col} vs {x_col}",
+        trendline='ols'
+    )
+
+    # Change regression line color
+    for trace in fig.data:
+        if trace.mode == 'lines':
+            trace.line.color = 'red'  # Custom color for regression line
+
+    return fig
+
+# Run the app
 if __name__ == '__main__':
-    app.run(debug=True, open_browser=True, use_reloader=False)
-
-
+    app.run(debug=True, use_reloader=False, open_browser=True)
     
     
     
