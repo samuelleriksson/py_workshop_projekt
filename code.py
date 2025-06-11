@@ -120,6 +120,26 @@ for col in X_encoded:
 r2_df = pd.DataFrame.from_dict(r2_scores, orient="index", columns=["R^2"])
 r2_df = r2_df.sort_values(by="R^2", ascending=False)
 
+import plotly.express as px
+
+# Plot top 20 features
+r2_fig = px.bar(
+    r2_df.head(20),
+    x="R^2",
+    y=r2_df.head(20).index,
+    orientation="h",
+    title="Top 20 Features by R² Score",
+    labels={"index": "Feature", "R^2": "R² Score"}
+)
+
+# Reverse y-axis so best scores appear at top
+r2_fig.update_layout(
+    yaxis=dict(autorange="reversed"),
+    plot_bgcolor='rgba(0,0,0,0)',
+    paper_bgcolor='rgba(0,0,0,0)',
+    font=dict(color='white')
+)
+
 print(r2_df.head(15))
 
 #%%
@@ -326,9 +346,23 @@ app.layout = html.Div([
         }
     ),
 
+    html.H3(
+        "Top 20 Features by R² Score",
+        style={
+            "textAlign": "center",
+            "marginTop": "40px",
+            "color": "white",
+            "textShadow": "0px 0px 8px rgba(0, 0, 0, 0.7)"
+        }
+    ),
+        
     html.Div([
-        dcc.Graph(id='R^2', style={"width": "70%"})
-    ])
+    dcc.Graph(
+        id="r2-barplot",
+        figure=r2_fig,
+        style={"width": "70%", "margin": "0 auto"}
+    )
+])
 ], style={
     "backgroundImage": 'url("https://dystewilliams.com/wp-content/uploads/2020/07/iStock-1181134074-neighborhood-1536x864.jpg")',
     "backgroundRepeat": "repeat-y",
