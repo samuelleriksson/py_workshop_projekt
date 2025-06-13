@@ -181,15 +181,22 @@ X_test = X_test.drop(columns=["Id"])
 #%%
 
 from sklearn.metrics import r2_score, mean_squared_error
+from sklearn.metrics import mean_squared_log_error
 from sklearn.ensemble import RandomForestRegressor
+import numpy as np
 
 model = RandomForestRegressor(n_estimators=100, random_state=42).fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
+
+
 mse = mean_squared_error(y_test, y_pred)
+rmsle = np.sqrt(mean_squared_log_error(y_test, y_pred))
+
 print("RandomForest")
 print("R²:", r2_score(y_test, y_pred))
 print(f"MSE: {mse:,.2f}")
+print("RMSLE:", rmsle)
 print("########################################")
 
 #%%
@@ -211,6 +218,7 @@ model = LinearRegression().fit(X_train[["OverallQual"]],y_train)
 y_pred = model.predict(X_test[["OverallQual"]])
 
 mse = mean_squared_error(y_test, y_pred)
+
 print("LinearRegression (OverallQual)")
 print("R²:", r2_score(y_test, y_pred))
 print(f"MSE: {mse:,.2f}")
@@ -228,8 +236,11 @@ model = XGBRegressor(n_estimators = 100, random_state = 42).fit(X_train,y_train)
 y_pred = model.predict(X_test)
 
 mse = mean_squared_error(y_test, y_pred)
+rmsle = np.sqrt(mean_squared_log_error(y_test, y_pred))
+
 print("XGBRGradientBoosting")
 print("R²:", r2_score(y_test, y_pred))
+print("RMSLE:", rmsle)
 print(f"MSE: {mse:,.2f}")
 print("########################################")
 
@@ -285,9 +296,12 @@ model = xgb.train(
 y_pred = model.predict(dvalid)
 mse = mean_squared_error(y_test, y_pred)
 r2 = r2_score(y_test, y_pred)
+rmsle = np.sqrt(mean_squared_log_error(y_test, y_pred))
+
 
 print("XGBRBoost")
 print("R²:", r2)
+print("RMSLE:", rmsle)
 print(f"MSE: {mse:,.2f}")
 
 #%%
@@ -295,12 +309,68 @@ print(f"MSE: {mse:,.2f}")
 xgb.plot_importance(model, max_num_features=20)
 plt.tight_layout()
 plt.show()
+#%%
+
+import io
+import base64
+import matplotlib.pyplot as plt
+import xgboost as xgb
+
+# Plot top 20 features by importance
+fig, ax = plt.subplots()
+xgb.plot_importance(model, max_num_features=20, ax=ax)
+plt.tight_layout()
+
+# Save as transparent image to buffer
+buf = io.BytesIO()
+plt.savefig(buf, format="png", transparent=True)
+plt.close(fig)
+buf.seek(0)
+
+# Encode to base64
+importance_img_base64 = base64.b64encode(buf.read()).decode("utf-8")
 
 
 #%%
 
 
 cv_results["test-rmse-mean"].plot(title="CV RMSE over boosting rounds")
+plt.xlabel("Boosting Round")
+plt.ylabel("RMSE")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+#%%
+
+import io
+import base64
+import matplotlib.pyplot as plt
+
+# Create the plot
+fig, ax = plt.subplots()
+cv_results["test-rmse-mean"].plot(ax=ax, title="CV RMSE over Boosting Rounds")
+ax.set_xlabel("Boosting Round")
+ax.set_ylabel("RMSE")
+ax.grid(True)
+plt.tight_layout()
+
+# Save the plot to a buffer
+buf = io.BytesIO()
+plt.savefig(buf, format="png", transparent = True)
+plt.close(fig)  # Close the plot to avoid displaying it outside Dash
+buf.seek(0)
+
+# Encode the image to base64
+img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+
+
+#%%
+
+xgb.plot_importance(model, importance_type="gain", max_num_features=20)
+plt.grid(True)
+plt.tight_layout()
+plt.show()
 
 
 #%%
@@ -309,6 +379,30 @@ import shap
 explainer = shap.Explainer(model)
 shap_values = explainer(X_test)
 shap.plots.beeswarm(shap_values)
+
+#%%
+
+import shap
+import matplotlib.pyplot as plt
+import io
+import base64
+
+# 1. Compute SHAP values
+explainer = shap.Explainer(model)
+shap_values = explainer(X_test)
+
+# 2. Create SHAP beeswarm plot
+fig = plt.figure()
+shap.plots.beeswarm(shap_values, show=False)  # show=False prevents auto-display
+
+# 3. Save the plot to buffer with transparent background
+buf = io.BytesIO()
+plt.savefig(buf, format="png", transparent=True, bbox_inches='tight')
+plt.close(fig)
+buf.seek(0)
+
+# 4. Encode to base64
+shap_img_base64 = base64.b64encode(buf.read()).decode("utf-8")
 
 
 #%%
@@ -319,8 +413,11 @@ model = HistGradientBoostingRegressor(random_state=42).fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 mse = mean_squared_error(y_test, y_pred)
+rmsle = np.sqrt(mean_squared_log_error(y_test, y_pred))
+
 print("HistGradientBoosting")
 print("R²:", r2_score(y_test, y_pred))
+print("RMSLE:", rmsle)
 print(f"MSE: {mse:,.2f}")
 print("########################################")
 
@@ -368,10 +465,12 @@ model = RidgeCV(alphas=[0.1, 1.0, 10.0], cv=5).fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 mse = mean_squared_error(y_test, y_pred)
+rmsle = np.sqrt(mean_squared_log_error(y_test, y_pred))
 r2 = r2_score(y_test, y_pred)
 print("LassoRidge")
 print("Best alpha: ", model.alpha_)
 print("R²:", r2_score(y_test, y_pred))
+print("RMSLE:", rmsle)
 print(f"MSE: {mse:,.2f}")
 print("########################################")
 
@@ -381,8 +480,11 @@ model = LinearRegression().fit(X_train,y_train)
 y_pred = model.predict(X_test)
 
 mse = mean_squared_error(y_test, y_pred)
+rmsle = np.sqrt(mean_squared_log_error(y_test, y_pred))
+
 print("LinearRegression (multivariate)")
 print("R²:", r2_score(y_test, y_pred))
+print("RMSLE:", rmsle)
 print(f"MSE: {mse:,.2f}")
 print("########################################")
 
@@ -408,7 +510,7 @@ model_results = pd.DataFrame([
         "Model": "XGBR Gradient Boosting",
         "R² Score": 0.91,
         "MSE": "689 401 639",
-        "Notes": "n_estimators=100, learning_rate=0.05?"
+        "Notes": "n_estimators=100, learning_rate=0.05"
     },
     {
         "Model": "Hist Gradient Boosting",
@@ -420,13 +522,19 @@ model_results = pd.DataFrame([
         "Model": "Random Forest",
         "R² Score": 0.90,
         "MSE": "801 632 622",
-        "Notes": "n_estimators=100, learning_rate=0.05?"
+        "Notes": "n_estimators=100, learning_rate=0.05"
     },
     {
         "Model": "Lasso Ridge",
         "R² Score": 0.85,
         "MSE": "1 170 244 722",
         "Notes": "alpha = 10"
+    },
+    {
+        "Model": "Optimizes XGBR Boost",
+        "R² Score": 0.92,
+        "MSE": "602 496 859",
+        "Notes": "RMSLE: 0.13"
     }
     
 ])
@@ -592,7 +700,47 @@ app.layout = html.Div([
                 "backgroundColor": "#fafafa"
             }
         ]
+    ),
+    html.Div([
+    html.H2("Cross-Validation Performance", style={"textAlign": "center"}),
+
+    html.P("This plot shows the average RMSE from 5-fold cross-validation "
+           "over boosting rounds during XGBoost model training. "
+           "Early stopping is applied to prevent overfitting.",
+           style={"width": "70%", "margin": "auto", "textAlign": "center"}),
+
+    html.Img(src="data:image/png;base64," + img_base64,
+             style={"display": "block", "margin": "30px auto", "width": "80%", "maxWidth": "700px"})
+]),
+    html.Div([
+    html.H2("Feature Importance (XGBoost)", style={"textAlign": "center"}),
+
+    html.P(
+        "This chart shows the top 20 features ranked by how frequently XGBoost used them to split decision trees. "
+        "A higher importance score indicates the feature was used more often across boosting rounds.",
+        style={"width": "70%", "margin": "auto", "textAlign": "center"}
+    ),
+
+    html.Img(
+        src="data:image/png;base64," + importance_img_base64,
+        style={"display": "block", "margin": "30px auto", "width": "80%", "maxWidth": "700px"}
     )
+]), 
+    html.Div([
+    html.H2("SHAP Beeswarm Plot (Global Explanation)", style={"textAlign": "center"}),
+
+    html.P(
+        "This SHAP beeswarm plot shows how each feature influenced individual predictions. "
+        "Each dot represents a single prediction. Color indicates the feature value "
+        "(red = high, blue = low), and position on the x-axis shows the impact on the model's output.",
+        style={"width": "70%", "margin": "auto", "textAlign": "center"}
+    ),
+
+    html.Img(
+        src="data:image/png;base64," + shap_img_base64,
+        style={"display": "block", "margin": "30px auto", "width": "90%", "maxWidth": "800px"}
+    )
+])
         
 
     ], style={  # Style for the center panel
