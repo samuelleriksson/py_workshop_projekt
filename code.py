@@ -540,7 +540,6 @@ model_results = pd.DataFrame([
 ])
 
 
-
 #%%
 
 import dash
@@ -567,6 +566,17 @@ app.layout = html.Div([
                  "color": "black"
              }
          ),
+         
+         html.P(
+"This dashboard provides visual analytics and modeling results for the Ames housing dataset. Firstly the data were either reformatted into useable format or removed if deemed irrelevant to the project. A number of different approaches were used to extract patterns from the data in order to predict real estate value.",
+    style={
+        "textAlign": "center",
+        "fontSize": "18px",
+        "margin": "10px auto 30px auto",
+        "width": "70%",
+        "color": "black"
+    }
+),
      
          html.Div([
              html.H2("Full Dataset Preview"),
@@ -739,7 +749,30 @@ app.layout = html.Div([
     html.Img(
         src="data:image/png;base64," + shap_img_base64,
         style={"display": "block", "margin": "30px auto", "width": "90%", "maxWidth": "800px"}
+    ),
+
+    html.Div([
+    html.H2("Conclusion", style={
+        "textAlign": "center",
+        "marginTop": "60px",
+        "color": "black"
+    }),
+    
+    html.P(
+        "The analysis highlights the most important features influencing housing prices in Ames. "
+        "Through regression modeling, cross-validation, and SHAP analysis, we gain insights into "
+        "both the predictive power and interpretability of machine learning models used.",
+        style={
+            "textAlign": "center",
+            "fontSize": "16px",
+            "width": "80%",
+            "margin": "20px auto",
+            "color": "black"
+        }
     )
+])
+
+
 ])
         
 
@@ -751,6 +784,9 @@ app.layout = html.Div([
         "borderRadius": "12px",
         "boxShadow": "0px 0px 16px rgba(0, 0, 0, 0.4)"
     })
+              
+                  
+              
 ], style={  # Background image stays on page
     "backgroundImage": 'url("https://dystewilliams.com/wp-content/uploads/2020/07/iStock-1181134074-neighborhood-1536x864.jpg")',
     "backgroundRepeat": "repeat",
